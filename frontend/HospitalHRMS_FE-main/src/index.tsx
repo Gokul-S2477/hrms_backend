@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { base_path } from "./envconfig";       // ✅ renamed
+import { base_path } from "./environment";       // ✅ renamed
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./style/css/feather.css";
 import "./index.scss";

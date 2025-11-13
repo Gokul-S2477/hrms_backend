@@ -1,14 +1,13 @@
-// src/feature-module/router/AppRouter.tsx
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+import Login3 from "../auth/login/login";
 
 const AppRouter: React.FC = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<div style={{ padding: 20 }}>Hospital HRMS Frontend is running ✅</div>} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      {/* 👇 Default path will now show the Login3 page */}
+      <Route path="/" element={<Login3 />} />
+    </Routes>
   );
 };
 
