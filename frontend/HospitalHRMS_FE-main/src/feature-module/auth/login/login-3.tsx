@@ -8,7 +8,7 @@ type PasswordField = "password";
 
 const Login3: React.FC = () => {
   const routes = all_routes;
-  const navigation = useNavigate();
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -25,6 +25,7 @@ const Login3: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
       const response = await fetch(`${API_BASE}/api/token/`, {
         method: "POST",
@@ -34,13 +35,49 @@ const Login3: React.FC = () => {
 
       const data = await response.json();
 
-      if (response.ok && data.access) {
-        localStorage.setItem("access_token", data.access);
-        localStorage.setItem("refresh_token", data.refresh);
-        alert("✅ Login successful!");
-        navigation(routes.adminDashboard);
-      } else {
+      if (!response.ok || !data.access) {
         alert("❌ Invalid username or password");
+        return;
+      }
+
+      // 🔥 Store tokens
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("refresh_token", data.refresh);
+
+      // 🔥 Get user details + role
+      const userRes = await fetch(`${API_BASE}/api/auth/user/`, {
+        headers: { Authorization: `Bearer ${data.access}` },
+      });
+
+      const userInfo = await userRes.json();
+
+      if (!userRes.ok) {
+        alert("⚠ Unable to fetch user role.");
+        return;
+      }
+
+      // Expected: backend returns user.role = "admin" | "hr" | "employee"
+      const role = userInfo.role?.toLowerCase() || "";
+
+      // 🔥 Save user object
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          username: username,
+          role: role,
+          token: data.access,
+        })
+      );
+
+      alert("✅ Login successful!");
+
+      // 🔥 ROLE-BASED REDIRECTION
+      if (role === "admin" || role === "hr") {
+        navigate(routes.adminDashboard);
+      } else if (role === "employee") {
+        navigate(routes.employeeDashboard);
+      } else {
+        alert("⚠ Unknown role. Cannot redirect.");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -71,7 +108,7 @@ const Login3: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* Username Field */}
+                  {/* Username */}
                   <div className="mb-3">
                     <label className="form-label">Username</label>
                     <div className="input-group">
@@ -88,7 +125,7 @@ const Login3: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Password Field */}
+                  {/* Password */}
                   <div className="mb-3">
                     <label className="form-label">Password</label>
                     <div className="pass-group">
@@ -106,7 +143,7 @@ const Login3: React.FC = () => {
                             : "ti-eye-off"
                         }`}
                         onClick={() => togglePasswordVisibility("password")}
-                      ></span>
+                      />
                     </div>
                   </div>
 
