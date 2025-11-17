@@ -8,13 +8,14 @@ type PasswordField = "password";
 
 const Login3: React.FC = () => {
   const routes = all_routes;
-  const navigation = useNavigate();
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisibility, setPasswordVisibility] = useState({
     password: false,
   });
+  const [error, setError] = useState("");
 
   const togglePasswordVisibility = (field: PasswordField) => {
     setPasswordVisibility((prevState) => ({
@@ -25,6 +26,8 @@ const Login3: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     try {
       const response = await fetch(`${API_BASE}/api/token/`, {
         method: "POST",
@@ -34,17 +37,35 @@ const Login3: React.FC = () => {
 
       const data = await response.json();
 
-      if (response.ok && data.access) {
-        localStorage.setItem("access_token", data.access);
-        localStorage.setItem("refresh_token", data.refresh);
-        alert("✅ Login successful!");
-        navigation(routes.adminDashboard);
-      } else {
-        alert("❌ Invalid username or password");
+      // LOGIN FAILED
+      if (!response.ok || !data.access) {
+        setError("❌ Invalid username or password");
+        return;
       }
+
+      // SAVE TOKENS
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("refresh_token", data.refresh);
+
+      // SAVE USER INFO
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          username: data.username || username,
+          role: data.role || "employee",
+        })
+      );
+
+      // ROLE-BASED REDIRECT
+      if (data.role === "admin" || data.role === "hr") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/employee-dashboard");
+      }
+
     } catch (error) {
       console.error("Login error:", error);
-      alert("⚠️ Unable to connect to backend");
+      setError("⚠️ Unable to connect to backend. Please try again.");
     }
   };
 
@@ -71,6 +92,10 @@ const Login3: React.FC = () => {
                     </p>
                   </div>
 
+                  {error && (
+                    <p className="text-danger text-center fw-bold">{error}</p>
+                  )}
+
                   {/* Username Field */}
                   <div className="mb-3">
                     <label className="form-label">Username</label>
@@ -81,6 +106,7 @@ const Login3: React.FC = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         className="form-control border-end-0"
                         placeholder="Enter your username"
+                        required
                       />
                       <span className="input-group-text border-start-0">
                         <i className="ti ti-user" />
@@ -98,6 +124,7 @@ const Login3: React.FC = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         className="pass-input form-control"
                         placeholder="Enter your password"
+                        required
                       />
                       <span
                         className={`ti toggle-passwords ${
