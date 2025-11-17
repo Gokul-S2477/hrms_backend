@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { publicRoutes, authRoutes } from "./router.link";
 import ProtectedRoute from "./ProtectedRoute";
-import TwoColumnSidebar from "@core/common/two-column";   // ⭐ FINAL IMPORT
+import TwoColumnSidebar from "../../core/common/two-column/TwoColumnSidebar";
 import { getUserRole } from "utils/auth";
 
 const AppRouter: React.FC = () => {
