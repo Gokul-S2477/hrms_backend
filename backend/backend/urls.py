@@ -1,30 +1,40 @@
 """
 URL configuration for backend project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework.routers import DefaultRouter
 
-from django.contrib import admin
-from django.urls import path, include
+from ticketing.views import (
+    TicketViewSet,
+    TicketCommentViewSet,
+    TicketCategoryViewSet,
+    WorkflowStageViewSet,
+)
 
+# ------------------------------
+# Initialize DRF Router FIRST
+# ------------------------------
+router = DefaultRouter()
+router.register('tickets', TicketViewSet)
+router.register('comments', TicketCommentViewSet)
+router.register('categories', TicketCategoryViewSet)
+router.register('stages', WorkflowStageViewSet)
+
+# ------------------------------
+# URL Patterns
+# ------------------------------
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('users.auth_urls')),   # ✅ JWT routes
+
+    # Router MUST be included BEFORE other /api/ includes
+    path('api/', include(router.urls)),
+
+    # Other app routes
+    path('api/', include('users.auth_urls')),
     path('api/', include('users.urls')),
     path('api/', include('employees.urls')),
     path('api/', include('attendance.urls')),
@@ -32,7 +42,8 @@ urlpatterns = [
     path('api/', include('dashboard.urls')),
 ]
 
-
-# Serve media files in DEBUG (keeps image uploads working locally)
+# ------------------------------
+# Static files (dev only)
+# ------------------------------
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

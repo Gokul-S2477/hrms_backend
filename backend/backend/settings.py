@@ -46,7 +46,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
-    
+    "django_filters",
+    "storages",               # if using S3
+    "django_celery_results",  # optional
+    "channels",               # optional
 
     # Your apps
     "employees",
@@ -59,7 +62,9 @@ INSTALLED_APPS = [
     "chats",
     "dashboard",
     "reports",
+    "ticketing",
 ]
+
 
 # ---------------------------------------------------------------------
 # MIDDLEWARE
@@ -153,10 +158,14 @@ AUTH_USER_MODEL = "users.CustomUser"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        'rest_framework.authentication.SessionAuthentication',       
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
 }
 
 # ---------------------------------------------------------------------
@@ -195,3 +204,14 @@ SIMPLE_JWT = {
 
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = ...
+AWS_SECRET_ACCESS_KEY = ...
+AWS_STORAGE_BUCKET_NAME = ...
+AWS_S3_REGION_NAME = ...
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+
